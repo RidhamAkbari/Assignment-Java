@@ -1,0 +1,158 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Scanner;
+
+public class AuthorManagementApp {
+    //private static final String DB_URL = "jdbc:oracle:thin:@your_oracle_host:1521:your_sid";
+    //private static final String DB_USER = "your_username";
+    //private static final String DB_PASSWORD = "your_password";
+
+    public static void main(String[] args) {
+       try{  
+//step1 load the driver class  
+Class.forName("oracle.jdbc.driver.OracleDriver");  
+  
+//step2 create  the connection object  
+Connection connection=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","system","manager");  
+  
+            Scanner scanner = new Scanner(System.in);
+
+            while (true) {
+                System.out.println("Menu:");
+                System.out.println("1. Add Author details");
+                System.out.println("2. Delete Author");
+                System.out.println("3. Display all records");
+                System.out.println("4. Update Author details");
+                System.out.println("5. Exit");
+                System.out.print("Enter your choice: ");
+
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+
+                switch (choice) {
+                    case 1:
+                        addAuthor(connection, scanner);
+                        break;
+                    case 2:
+                        deleteAuthor(connection, scanner);
+                        break;
+                    case 3:
+                        displayAllAuthors(connection);
+                        break;
+                    case 4:
+                        updateAuthor(connection, scanner);
+                        break;
+                    case 5:
+                        System.out.println("Exiting the application.");
+                        scanner.close();
+                        connection.close();
+                        System.exit(0);
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Implement the addAuthor, deleteAuthor, displayAllAuthors, and updateAuthor methods 
+	    private static void addAuthor(Connection connection, Scanner scanner) throws SQLException {
+        System.out.print("Enter Author ID: ");
+        int  id= scanner.nextInt();
+        System.out.print("Enter Author First Name: ");
+        String firstName = scanner.nextLine();
+        System.out.print("Enter Author Last Name: ");
+        String lastName = scanner.nextLine();
+        System.out.print("Enter Author Birthdate (YYYY-MM-DD): ");
+        String birthdate = scanner.nextLine();
+        System.out.print("Enter Author Book Title: ");
+        String bookTitle = scanner.nextLine();
+
+        String sql = "INSERT INTO Author (Author_id, FirstName, LastName, Birthdate, BookTitle) VALUES (?, ?, ?, TO_DATE(?, 'YYYY-MM-DD'), ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, id);
+        preparedStatement.setString(2, firstName);
+        preparedStatement.setString(3, lastName);
+        preparedStatement.setString(4, birthdate);
+        preparedStatement.setString(5, bookTitle);
+
+        int rowsInserted = preparedStatement.executeUpdate();
+        if (rowsInserted > 0) {
+            System.out.println("Author details added successfully.");
+        } else {
+            System.out.println("Error: Author details not added.");
+        }
+    }
+
+    private static void deleteAuthor(Connection connection, Scanner scanner) throws SQLException {
+        System.out.print("Enter Author ID to delete: ");
+        int authorId = scanner.nextInt();
+        scanner.nextLine(); // Consume the newline character
+
+        String sql = "DELETE FROM Author WHERE Author_id = ?";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, authorId);
+
+        int rowsDeleted = preparedStatement.executeUpdate();
+        if (rowsDeleted > 0) {
+            System.out.println("Author deleted successfully.");
+        } else {
+            System.out.println("Error: Author not found or not deleted.");
+        }
+    }
+
+    private static void displayAllAuthors(Connection connection) throws SQLException {
+        String sql = "SELECT * FROM Author";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        System.out.println("Author Records:");
+        while (resultSet.next()) {
+            int authorId = resultSet.getInt("Author_id");
+            String firstName = resultSet.getString("FirstName");
+            String lastName = resultSet.getString("LastName");
+            String birthdate = resultSet.getString("Birthdate");
+            String bookTitle = resultSet.getString("BookTitle");
+
+            System.out.println("Author ID: " + authorId);
+            System.out.println("First Name: " + firstName);
+            System.out.println("Last Name: " + lastName);
+            System.out.println("Birthdate: " + birthdate);
+            System.out.println("Book Title: " + bookTitle);
+        }
+    }
+
+    private static void updateAuthor(Connection connection, Scanner scanner) throws SQLException {
+        System.out.print("Enter Author ID to update: ");
+        int authorId = scanner.nextInt();
+        scanner.nextLine(); // Consume the newline character
+
+        System.out.print("Enter new Author First Name: ");
+        String newFirstName = scanner.nextLine();
+        System.out.print("Enter new Author Last Name: ");
+        String newLastName = scanner.nextLine();
+        System.out.print("Enter new Author Birthdate (YYYY-MM-DD): ");
+        String newBirthdate = scanner.nextLine();
+        System.out.print("Enter new Author Book Title: ");
+        String newBookTitle = scanner.nextLine();
+
+        String sql = "UPDATE Author SET FirstName=?, LastName=?, Birthdate=TO_DATE(?, 'YYYY-MM-DD'), BookTitle=? WHERE Author_id=?";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, newFirstName);
+        preparedStatement.setString(2, newLastName);
+        preparedStatement.setString(3, newBirthdate);
+        preparedStatement.setString(4, newBookTitle);
+        preparedStatement.setInt(5, authorId);
+
+        int rowsUpdated = preparedStatement.executeUpdate();
+        if (rowsUpdated > 0) {
+            System.out.println("Author details updated successfully.");
+        } else {
+            System.out.println("Error: Author not found or details not updated.");
+        }
+    }
+}

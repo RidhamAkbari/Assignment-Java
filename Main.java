@@ -1,10 +1,11 @@
-public class Main
-{
-	public static void main(String[] args) {
-        int Rate = 10;
-        int Time = 2;
-        int Principle = 10000;
-        int SI = (Rate*Principle*Time)/100;
-        System.out.println("Simple Interest ==> " + SI);
-	}
+package com.mycompany.app;
+import com.mycompany.math.Calculator;
+
+public class Main{
+    public static void main(){
+        Calculator obj1 = new Calculator();
+        int sum;
+        sum = obj1.add(2,67);
+        System.out.println(sum);
+    }
 }
